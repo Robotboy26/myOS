@@ -1,0 +1,3 @@
+OS.asm backspace will not get rid of char if you are at 63 byte limit
+
+OS.asm enter/done in mainloop loop does not 

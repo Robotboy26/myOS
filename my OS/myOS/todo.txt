@@ -1,0 +1,7 @@
+os.asm pop command does not work ?
+os.asm check the stack to see if it is over writeing stuff
+os.asm pretty sure the stack is over writeing things
+
+figure out what to do next??
+
+

@@ -1,0 +1,33 @@
+ mov si, buffer
+ mov di, cmd_push  ; "push" command
+ call strcmp
+ jc .push
+
+ mov si, buffer
+ mov di, cmd_pop  ; "pop" command
+ call strcmp
+ jc .pop
+
+
+
+.push:
+ mov si, msg_push
+ push si
+ mov si, msg_pushed
+ call print_string
+
+ jmp mainloop
+
+.pop:
+ mov si, msg_poped
+ call print_string
+ pop si
+ call print_string
+
+ jmp mainloop
+
+ cmd_push db 'push', 0
+cmd_pop db 'pop', 0
+
+msg_pushed db 'SI pushed', endstr, 0
+msg_poped db 'SI poped', endstr, 0
