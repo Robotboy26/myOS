@@ -5,4 +5,4 @@ WORKDIR /src
 
 # [Optional] Uncomment this section to install additional OS packages you may want.
 #
-RUN apk add --no-cache nasm, qemu, qemu-system-x86_64
+RUN apt install nasm, qemu, qemu-system-x86_64
