@@ -5,4 +5,8 @@ WORKDIR /src
 
 # [Optional] Uncomment this section to install additional OS packages you may want.
 #
-RUN apt install nasm, qemu, qemu-system-x86_64
+USER root
+RUN apt-get update
+RUN apt-get install nasm
+RUN apt-get install qemu
+RUN apt-get install qemu-system-x86_64
