@@ -4,7 +4,6 @@ FROM mcr.microsoft.com/devcontainers/base:${VARIANT}
 WORKDIR /src
 
 # [Optional] Uncomment this section to install additional OS packages you may want.
-#
 USER root
 RUN apt-get update
 RUN apt-get -y install nasm
