@@ -9,4 +9,4 @@ USER root
 RUN apt-get update
 RUN apt-get -y install nasm
 RUN apt-get -y install qemu
-RUN apt-get -y install qemu-system-x86_64
+RUN apt-get -y install qemu-system-x86
