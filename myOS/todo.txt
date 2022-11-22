@@ -1,0 +1,6 @@
+OS.asm push does not work on some longer strings
+OS.asm I think there is a memory problem somewhere
+OS.asm echo; command does not work ?
+OS.asm check the stack to see if it is over writeing stuff
+
+figure out what to do next??

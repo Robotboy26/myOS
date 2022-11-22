@@ -1,0 +1,17 @@
+mov x, y
+x = destination register
+y = sorce register
+
+registers:
+; the 16 bit general of the 16 bit registers can be split into 2 respection 8 bit registers. ex.: ax(ah, al)
+16 bit general: ax(ah, al), bx(bh, bl), cx(ch, cl), dx(dh, dl)
+
+; the 16 pointer or index registers deal with pointing to memory addresses.
+16 bit pointer: SI(source index), DI(destination index), IP(instruction index)
+; the instruction pointer can not be manipulated as it tell the computer where the next instruction is
+
+; deal with the memory stack
+stack registers:
+
+ex.: "mov si, al"
+
