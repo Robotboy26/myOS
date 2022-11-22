@@ -1,1 +1,0 @@
-pmemsave 0x0 2048 out.txt  ; memory dump must use in qemu
