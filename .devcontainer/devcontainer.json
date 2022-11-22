@@ -16,7 +16,8 @@
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
 				"mads-hartmann.bash-ide-vscode",
-				"rogalmic.bash-debug"
+				"rogalmic.bash-debug",
+				"LucianIrsigler.nasm"
 			]
 		}
 	},
