@@ -1,1 +1,1 @@
-sudo qemu-system-x86_64 -machine accel=kvm:tcg -m 4096 /dev/sdb -monitor stdio -nographic
+sudo qemu-system-x86_64 -machine accel=kvm:tcg -m 1024 /dev/sdb -nographic
