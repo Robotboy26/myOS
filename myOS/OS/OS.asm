@@ -1,34 +1,27 @@
-[ORG 0]
-; start
+%define newline 0x0D, 0x0A
+[org 0]   ; add 0 to label addresses
+[bits 16]      ; tell the assembler we want 16 bit code
 
-; setting up the stack
-cli     ; Turn off interrupts for SS:SP update
-                  ; to avoid a problem with buggy 8088 CPUs
-mov ax, 0         ; set up segments
-mov ds, ax        ; DS = 0x0000
-mov es, ax        ; ES = 0x0000
-mov ss, ax        ; SS = 0x0000
-mov sp, 0x7c00    ; SP = 0x7c00
-                  ; We'll set the stack starting just below
-                  ; where the bootloader is at 0x0:0x7c00. The
-                  ; stack can be placed anywhere in usable and
-                  ; unused RAM.
-sti               ; Turn interrupts back on
+  ;stack breaks something testing needed!
+  mov ax, 0  ; set up segments
+  ;mov ds, ax
+  ;mov es, ax
+  mov ss, ax     ; setup stack
+  mov sp, 0x7C00 ; stack grows downwards from 0x7C00
 
-; very importand do not know why
-; Set DS = CS 
-mov ax, cs
-mov ds, ax
+  ; very importand do not know why
+  ; Set DS = CS 
+  mov ax, cs
+  mov ds, ax
 
-; startup string
-mov si, welcome
-call printStr
+  mov si, welcome
+  call printStr
 
 ;##############
 ;define strings
 ;##############
 
-welcome db 'welcome to my OS', 0
+welcome db 'Welcome to My OS!', newline, 'type help to see a list of commands', newline, 0
 
 ;######################
 ;import functions files

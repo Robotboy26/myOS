@@ -1,36 +1,29 @@
-[ORG 0x7c00]      ; Bootloader starts at physical address 0x07c00
+; used a motified version of the code from 'https://stackoverflow.com/questions/39534327/bootloader-not-loading-second-sector'
+[bits 16]
+[ORG 0x7c00]      ; Bootloader starts at physical address 0x07c00\
 ; start
 
-; setting up the stack
-cli     ; Turn off interrupts for SS:SP update
-                  ; to avoid a problem with buggy 8088 CPUs
-mov ax, 0         ; set up segments
-mov ds, ax        ; DS = 0x0000
-mov es, ax        ; ES = 0x0000
-mov ss, ax        ; SS = 0x0000
-mov sp, 0x7c00    ; SP = 0x7c00
-                  ; We'll set the stack starting just below
-                  ; where the bootloader is at 0x0:0x7c00. The
-                  ; stack can be placed anywhere in usable and
-                  ; unused RAM.
-sti               ; Turn interrupts back on
+    ; At start bootloader sets DL to boot drive
 
-; very importand do not know why
-; Set DS = CS 
-mov ax, cs
-mov ds, ax
+    ; Since we specified an ORG(offset) of 0x7c00 we should make sure that
+    ; Data Segment (DS) is set accordingly. The DS:Offset that would work
+    ; in this case is DS=0 . That would map to segment:offset 0x0000:0x7c00
+    ; which is physical memory address (0x0000<<4)+0x7c00 . We can't rely on
+    ; DS being set to what we expect upon jumping to our code so we set it
+    ; explicitly
+    xor ax, ax
+    mov ds, ax        ; DS=0
 
-; startup string
-mov si, welcome
-call printStr
+    cli               ; Turn off interrupts for SS:SP update
+                      ; to avoid a problem with buggy 8088 CPUs
+    mov ss, ax        ; SS = 0x0000
+    mov sp, 0x7c00    ; SP = 0x7c00
+                      ; We'll set the stack starting just below
+                      ; where the bootloader is at 0x0:0x7c00. The
+                      ; stack can be placed anywhere in usable and
+                      ; unused RAM.
+    sti               ; Turn interrupts back on
 
-;##############
-;define strings
-;##############
-
-welcome db 'booting my OS', 0
-
-; read and load the OS into memory
 reset:                ; Resets drive
 
     xor ax, ax         ; AH = 0 = Reset diskdrive
@@ -38,16 +31,16 @@ reset:                ; Resets drive
     jc reset          ; If carry flag was set, try again
 
     mov ax, 0x07e0     ; When we read the sector, we are going to read to
-                    ;    address 0x07e0:0x0000 (phys address 0x07e00)
-                    ;    right after the bootloader in memory
+                      ;    address 0x07e0:0x0000 (phys address 0x07e00)
+                      ;    right after the bootloader in memory
     mov es, ax         ; Set ES with 0x07e0
     xor bx, bx         ; Offset to read sector to
 
 load:
     mov ah, 0x2        ; 2 = Read drive
-    mov al, 0x4        ; Reading two sector (two sector is 2048 bytes)
+    mov al, 0x2        ; Reading two sector (two sector is 1024 bytes)
     mov ch, 0x0        ; Track (Cylinder) 1
-    mov cl, 0x2        ; start reading at svector 2
+    mov cl, 0x2        ; Sector 2
     mov dh, 0x0        ; Head 1
     int 0x13
     jc load         ; If carry flag was set, try again
