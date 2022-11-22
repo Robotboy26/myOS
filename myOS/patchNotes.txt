@@ -1,0 +1,26 @@
+10/31/22:
+1. added the patchNotes text file
+2. mostly worked on documentation
+
+11/2/22:
+1.worked on implementing push and pop
+
+11/3/22:
+1. added the dumps directory with a shell file to show to os.bin file in differnt ways
+2. changed kernel.sh to work with the dumps shell file
+3. got push and pop working for one user input char I am very happy!!!
+4. got user pushed strings to be poped and display very happy!!!
+5. to test this (in qemu) type 'push' then type your string then type 'pop' and the string
+will be reversed now try. type 'push' then your string then type 'rstring' to reverse it
+then type 'pop' to now get it of in proper order.
+6. very happy!!!!
+
+11/4/22:
+1. changed mainloop the kernelLoop
+2. moved all of the differnt command into there own files
+
+11/5/22:
+1. did't really do much and don't really remember
+
+11/6/22:
+1. add the readSector command for stuff
