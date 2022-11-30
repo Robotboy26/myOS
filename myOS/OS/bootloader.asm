@@ -1,66 +1,49 @@
-; used a motified version of the code from 'https://stackoverflow.com/questions/39534327/bootloader-not-loading-second-sector'
+[org 0x7c00]
+KERNEL_OFFSET equ 0x1000 ; The same one we used when linking the kernel
+
+mov [BOOT_DRIVE], dl ; Remember that the BIOS sets us the boot drive in 'dl' on boot
+mov bp, 0x9000
+mov sp, bp
+
+mov bx, MSG_16BIT_MODE
+call print16
+call print16_nl
+
+call load_kernel ; read the kernel from disk
+call switch_to_32bit ; disable interrupts, load GDT,  etc. Finally jumps to 'BEGIN_PM'
+jmp $ ; Never executed
+
+%include "bootloaderStuff/print-16bit.asm"
+%include "bootloaderStuff/print-32bit.asm"
+%include "bootloaderStuff/disk.asm"
+%include "bootloaderStuff/gdt.asm"
+%include "bootloaderStuff/switch-to-32bit.asm"
+
 [bits 16]
-[ORG 0x7c00]      ; Bootloader starts at physical address 0x07c00\
-; start
+load_kernel:
+    mov bx, MSG_LOAD_KERNEL
+    call print16
+    call print16_nl
 
-    ; At start bootloader sets DL to boot drive
+    mov bx, KERNEL_OFFSET ; Read from disk and store in 0x1000
+    mov dh, 31
+    mov dl, [BOOT_DRIVE]
+    call disk_load
+    ret
 
-    ; Since we specified an ORG(offset) of 0x7c00 we should make sure that
-    ; Data Segment (DS) is set accordingly. The DS:Offset that would work
-    ; in this case is DS=0 . That would map to segment:offset 0x0000:0x7c00
-    ; which is physical memory address (0x0000<<4)+0x7c00 . We can't rely on
-    ; DS being set to what we expect upon jumping to our code so we set it
-    ; explicitly
-    xor ax, ax
-    mov ds, ax        ; DS=0
-
-    cli               ; Turn off interrupts for SS:SP update
-                      ; to avoid a problem with buggy 8088 CPUs
-    mov ss, ax        ; SS = 0x0000
-    mov sp, 0x7c00    ; SP = 0x7c00
-                      ; We'll set the stack starting just below
-                      ; where the bootloader is at 0x0:0x7c00. The
-                      ; stack can be placed anywhere in usable and
-                      ; unused RAM.
-    sti               ; Turn interrupts back on
-
-    mov si, welcome
-    call printStr
-
-    jmp $
+[bits 32]
+BEGIN_32BIT:
+    mov ebx, MSG_32BIT_MODE
+    call print32
+    call KERNEL_OFFSET ; Give control to the kernel
+    jmp $ ; Stay here when the kernel returns control to us (if ever)
 
 
-reset:                ; Resets drive
+BOOT_DRIVE db 0 ; It is a good idea to store it in memory because 'dl' may get overwritten
+MSG_16BIT_MODE db "Started in 16-bit Real Mode", 0
+MSG_32BIT_MODE db "Landed in 32-bit Protected Mode", 0
+MSG_LOAD_KERNEL db "Loading kernel into memory", 0
 
-    xor ax, ax         ; AH = 0 = Reset diskdrive
-    int 0x13
-    jc reset          ; If carry flag was set, try again
-
-    mov ax, 0x07e0     ; When we read the sector, we are going to read to
-                      ;    address 0x07e0:0x0000 (phys address 0x07e00)
-                      ;    right after the bootloader in memory
-    mov es, ax         ; Set ES with 0x07e0
-    xor bx, bx         ; Offset to read sector to
-
-load:
-    mov ah, 0x2        ; 2 = Read drive
-    mov al, 0x2        ; Reading two sector (two sector is 1024 bytes)
-    mov ch, 0x0        ; Track (Cylinder) 1
-    mov cl, 0x2        ; Sector 2
-    mov dh, 0x0        ; Head 1
-    int 0x13
-    jc load         ; If carry flag was set, try again
-
-    jmp 0x07e0:0x0000 ; Jump to 0x7e0:0x0000 setting CS to 0x07e0
-                      ;    IP to 0 which is code in second stage
-                      ;    (0x07e0<<4)+0x0000 = 0x07e00 physical address
-
-;######################
-;import functions files
-;######################
-
-welcome db "welcome to my OS", 0x0d, 0x0a, 0
-%include "bootloaderThings/stringStuff/printStr.asm"
-
-times 510 - ($ - $$) db 0 ; padding to fill the bootsector up to 512 bytes
-dw 0xAA55 ; boot signiture (tells the computer that this is the boot sector)
+; padding
+times 510 - ($-$$) db 0
+dw 0xaa55

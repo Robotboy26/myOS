@@ -1,5 +1,5 @@
 %define newline 0x0D, 0x0A
-[org 0]   ; add 0 to label addresses
+[org 0x07e0]   ; add 0 to label addresses
 [bits 16]      ; tell the assembler we want 16 bit code
 
 mov si, welcome
