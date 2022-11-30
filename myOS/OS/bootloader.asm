@@ -24,6 +24,10 @@
                       ; unused RAM.
     sti               ; Turn interrupts back on
 
+    mov si, welcome
+    call printStr
+
+
 reset:                ; Resets drive
 
     xor ax, ax         ; AH = 0 = Reset diskdrive
@@ -53,6 +57,7 @@ load:
 ;import functions files
 ;######################
 
+welcome db "welcome to my OS", 0, 0x0d, 0x0a
 %include "bootloaderThings/stringStuff/printStr.asm"
 
 times 510 - ($ - $$) db 0 ; padding to fill the bootsector up to 512 bytes
