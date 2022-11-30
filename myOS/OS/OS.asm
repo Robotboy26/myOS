@@ -2,11 +2,14 @@
 [org 0]   ; add 0 to label addresses
 [bits 16]      ; tell the assembler we want 16 bit code
 
+mov si, welcome
+call printStr
+
 jmp enterProtectedMode
 
 %include "bootloaderThings/GDT.asm"
 %include "bootloaderThings/stringStuff/printStr.asm"
-
+welcome db "welcome you are past the bootloader", 0x0d, 0x0a, 0
 
 enterProtectedMode:
   call enableA20

@@ -27,6 +27,8 @@
     mov si, welcome
     call printStr
 
+    jmp $
+
 
 reset:                ; Resets drive
 
@@ -57,7 +59,7 @@ load:
 ;import functions files
 ;######################
 
-welcome db "welcome to my OS", 0, 0x0d, 0x0a
+welcome db "welcome to my OS", 0x0d, 0x0a, 0
 %include "bootloaderThings/stringStuff/printStr.asm"
 
 times 510 - ($ - $$) db 0 ; padding to fill the bootsector up to 512 bytes
