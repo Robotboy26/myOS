@@ -1,3 +1,4 @@
+%define newline 0x0D, 0x0A
 [org 0x7c00]
 KERNEL_OFFSET equ 0x1000 ; The same one we used when linking the kernel
 
@@ -5,26 +6,24 @@ mov [BOOT_DRIVE], dl ; Remember that the BIOS sets us the boot drive in 'dl' on 
 mov bp, 0x9000
 mov sp, bp
 
-mov bx, MSG_16BIT_MODE
-call print16
-call print16_nl
+mov si, MSG_16BIT_MODE
+call printStr16
 
 call load_kernel ; read the kernel from disk
 call switch_to_32bit ; disable interrupts, load GDT,  etc. Finally jumps to 'BEGIN_PM'
 jmp $ ; Never executed
 
-%include "bootloaderStuff/print-16bit.asm"
-%include "bootloaderStuff/print-32bit.asm"
-%include "bootloaderStuff/disk.asm"
-%include "bootloaderStuff/gdt.asm"
-%include "bootloaderStuff/switch-to-32bit.asm"
+%include "bootloaderThings/printStr16.asm"
+%include "bootloaderThings/print-32bit.asm"
+%include "bootloaderThings/disk.asm"
+%include "bootloaderThings/gdt.asm"
+%include "bootloaderThings/switch-to-32bit.asm"
 
 [bits 16]
 load_kernel:
-    mov bx, MSG_LOAD_KERNEL
-    call print16
-    call print16_nl
-
+    mov si, MSG_LOAD_KERNEL
+    call printStr16
+    
     mov bx, KERNEL_OFFSET ; Read from disk and store in 0x1000
     mov dh, 31
     mov dl, [BOOT_DRIVE]
@@ -40,9 +39,9 @@ BEGIN_32BIT:
 
 
 BOOT_DRIVE db 0 ; It is a good idea to store it in memory because 'dl' may get overwritten
-MSG_16BIT_MODE db "Started in 16-bit Real Mode", 0
-MSG_32BIT_MODE db "Landed in 32-bit Protected Mode", 0
-MSG_LOAD_KERNEL db "Loading kernel into memory", 0
+MSG_16BIT_MODE db "Started in 16-bit Real Mode", newline, 0
+MSG_32BIT_MODE db "Landed in 32-bit Protected Mode", newline, 0
+MSG_LOAD_KERNEL db "Loading kernel into memory", newline, 0
 
 ; padding
 times 510 - ($-$$) db 0
