@@ -2,6 +2,7 @@
 switch_to_32bit:
     cli ; 1. disable interrupts
     lgdt [gdt_descriptor] ; 2. load the GDT descriptor
+
     mov eax, cr0
     or eax, 0x1 ; 3. set 32-bit mode bit in cr0
     mov cr0, eax
@@ -9,6 +10,10 @@ switch_to_32bit:
 
 [bits 32]
 init_32bit: ; we are now using 32-bit instructions
+    xor ax, ax              ; Set ES=DS=0 since an ORG of 0x7c00 is used
+    mov es, ax              ;     0x0000<<4+0x7c00 = physical address 0x07c00
+    mov ds, ax
+
     mov ax, DATA_SEG ; 5. update the segment registers
     mov ds, ax
     mov ss, ax
