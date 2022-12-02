@@ -36,7 +36,7 @@ BEGIN_32BIT:
 
 BOOT_DRIVE db 0 ; It is a good idea to store it in memory because 'dl' may get overwritten
 
-welcome db "landed in 32bit real mode", 0
+welcome db "landed in 32bit real mode hello world", 0
 
 ; padding
 times 510 - ($-$$) db 0
