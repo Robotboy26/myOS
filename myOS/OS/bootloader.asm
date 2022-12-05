@@ -51,17 +51,26 @@ Start64bit:
     mov rax, 0x1f201f201f201f20
     mov ecx, 500
     rep stosq
+
+    ; Display "Hello World!"
+    mov edi, 0x00b8000              
+ 
+    mov rax, 0x1F6C1F6C1F651F48    
+    mov [edi],rax
+ 
+    mov rax, 0x1F6F1F571F201F6F
+    mov [edi + 8], rax
+ 
+    mov rax, 0x1F211F641F6C1F72
+    mov [edi + 16], rax
     
     ;call KERNEL_OFFSET ; Give control to the kernel
-    hlt
-    ;jmp $ ; Stay here when the kernel returns control to us (if ever)
+    jmp $ ; Stay here when the kernel returns control to us (if ever)
 
 BOOT_DRIVE db 0 ; It is a good idea to store it in memory because 'dl' may get overwritten
 
 welcome db "landed in 32bit real mode", 0
-welcome2 db "detected cpuid and long mode and set up simple pageing", 0
-welcome3 db "lol mate"
-
+welcome2 db "detected cpuid and long mode", 0
 
 
 
