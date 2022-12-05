@@ -15,6 +15,9 @@ jmp $ ; Never executed
 %include "bootloaderThings/gdt.asm"
 %include "bootloaderThings/switch-to-32bit.asm"
 %include "bootloaderThings/print-32bit.asm"
+%include "bootloaderThings/cpuid.asm"
+%include "bootloaderThings/SimplePageing.asm"
+
 
 
 [bits 16]
@@ -30,13 +33,37 @@ BEGIN_32BIT:
     mov ebx, welcome
     call print32
 
-    call KERNEL_OFFSET ; Give control to the kernel
-    jmp $ ; Stay here when the kernel returns control to us (if ever)
+    call DetectCPUID
+    call DetectLongMode
+    call SetUpIdentityPageing
+    call EditGDT
+    jmp CODE_SEG:Start64bit
 
+    mov ebx, welcome2
+    call print32
+
+    jmp $
+
+[bits 64]
+
+Start64bit:
+    mov edi, 0xb8000
+    mov rax, 0x1f201f201f201f20
+    mov ecx, 500
+    rep stosq
+    
+    ;call KERNEL_OFFSET ; Give control to the kernel
+    hlt
+    ;jmp $ ; Stay here when the kernel returns control to us (if ever)
 
 BOOT_DRIVE db 0 ; It is a good idea to store it in memory because 'dl' may get overwritten
 
-welcome db "landed in 32bit real mode hello world", 0
+welcome db "landed in 32bit real mode", 0
+welcome2 db "detected cpuid and long mode and set up simple pageing", 0
+welcome3 db "lol mate"
+
+
+
 
 ; padding
 times 510 - ($-$$) db 0

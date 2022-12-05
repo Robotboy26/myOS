@@ -20,3 +20,4 @@ init_32bit: ; we are now using 32-bit instructions
     mov esp, ebp
 
     call BEGIN_32BIT ; 7. Call a well-known label with useful code
+
