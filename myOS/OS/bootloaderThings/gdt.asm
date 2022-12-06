@@ -41,5 +41,3 @@ EditGDT:
     mov [gdt_data + 6], byte 10101111b
 
     ret
-
-[bits 16]

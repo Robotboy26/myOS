@@ -1,7 +1,5 @@
-[bits 64]      ; tell the assembler we want 64 bit code
+[bits 16]      ; tell the assembler we want 64 bit code
 
-jmp $
+ret
 
-
-
-times 2048 -($-$$) db 0
+times 2048 -($-$$) db 0 ; padding
