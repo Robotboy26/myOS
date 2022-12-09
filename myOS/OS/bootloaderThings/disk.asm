@@ -5,7 +5,7 @@ ReadDisk:
 
     mov ah, 0x02
     mov bx, PROGRAM_SPACE
-    mov al, 2
+    mov al, 4
     mov dl, [Boot_Drive]
     mov ch, 0x00
     mov dh, 0x00
@@ -14,7 +14,6 @@ ReadDisk:
     int 0x13
 
     jc DiskReadFailed
-
     ret
 
 Boot_Drive:
