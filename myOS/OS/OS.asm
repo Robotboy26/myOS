@@ -3,8 +3,9 @@
 
 mov bx, welcome
 call print16
-
 jmp $
+
+jmp EnterProtectedMode
 
 EnterProtectedMode:
     cli ; 1. disable interrupts
@@ -34,8 +35,7 @@ StartProtectedMode:
     mov fs, ax
     mov gs, ax
 
-    mov edx, welcome2
-    call print32
+    mov [0xb8000], byte 'H'
 
 
 welcome db 'welcome'
