@@ -1,43 +1,20 @@
-[org 0x7e00]
-[bits 16]      ; tell the assembler we want 64 bit code
+[bits 64]
 
-mov bx, welcome
-call print16
+mov rdi, style_blue
+call clear_long
+
+mov rdi, style_blue
+mov rsi, long_mode_note
+call print_long
+
 jmp $
 
-jmp EnterProtectedMode
+%include "bootloaderThings/long_mode/clear.asm"
+%include "bootloaderThings/long_mode/print.asm"
 
-EnterProtectedMode:
-    cli ; 1. disable interrupts
-    lgdt [gdt_descriptor] ; 2. load the GDT descriptor
-    mov eax, cr0
-    or eax, 1 ; 3. set 32-bit mode bit in cr0
-    mov cr0, eax
-    jmp CODE_SEG:StartProtectedMode
+long_mode_note:                 db 'Now', 0
+style_blue:                     equ 0x1F
+vga_start:                  equ 0x000B8000
+vga_extent:                 equ 80 * 25 * 2             ; VGA Memory is 80 chars wide by 25 chars tall (one char is 2 bytes)
 
-%include "bootloaderThings/gdt.asm"
-%include "bootloaderThings/print-16bit.asm"
-%include "bootloaderThings/print-32bit.asm"
-%include "bootloaderThings/cpuid.asm"
-%include "bootloaderThings/SimplePageing.asm"
-
-EnableA20:
-    in al, 0x92
-    or al, 2
-    out 0x92, al
-    ret
-
-StartProtectedMode:
-    mov ax, DATA_SEG
-    mov ds, ax
-    mov ss, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-
-    mov [0xb8000], byte 'H'
-
-
-welcome db 'welcome'
-welcome2 db 'hello world welcome'
-times 2048 -($-$$) db 0 ; padding
+times 512 - ($ - $$) db 0x00
