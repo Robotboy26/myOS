@@ -1,8 +1,12 @@
 [bits 16]
 PROGRAM_SPACE equ 0x7e00
 
+StartReadDisk:
+    mov cx, 0
+
 ReadDisk:
 
+    inc cx
     mov ah, 0x02
     mov bx, PROGRAM_SPACE
     mov al, 4
@@ -13,7 +17,12 @@ ReadDisk:
 
     int 0x13
 
-    jc ReadDisk
+    cmp cx, 11
+    mov bx, zero
+    call print16
+    jl ReadDisk
+
+    jc DiskReadFailed
 
     ret
 
@@ -27,3 +36,4 @@ DiskReadFailed:
     jmp $
 
 DiskReadError db 'Disk Read Failed', 0
+zero db 'zerro', 0
