@@ -1,14 +1,6 @@
-;
-; Long Mode
-;
-; boot.asm
-;
-
-; Set Program Origin
-[org 0x7C00]
-
-; 16-bit Mode
-[bits 16]
+; Bootloader
+[org 0x7C00] ; Set Program Origin
+[bits 16] ; 16-bit Mode
 
 ; Initialize the base pointer and the stack pointer
 ; The initial values should be fine for what we've done so far,
@@ -31,8 +23,8 @@ call print_bios
 ; of the drive. Note: Only bl will be used
 mov bx, 0x0002
 
-; Now we want to load 3 sectors for the bootloader and kernel
-mov cx, 0x0003
+; Now we want to load 4 sectors for the bootloader and kernel
+mov cx, 0x0004
 
 ; Finally, we want to store the new sector immediately after the first
 ; loaded sector, at adress 0x7E00. This will help a lot with jumping between
@@ -64,10 +56,10 @@ msg_hello_world:                db `\r\nHello World, from the BIOS!\r\n`, 0
 ; Boot drive storage
 boot_drive:                     db 0x00
 
-; Pad boot sector for magic number
+; boot sector padding
 times 510 - ($ - $$) db 0x00
 
-; Magic number
+; Magic bootloader number
 dw 0xAA55
 
 
@@ -121,9 +113,9 @@ begin_long_mode:
 mov rdi, style_blue
 call clear_long
 
-mov rdi, style_blue
-mov rsi, long_mode_note
-call print_long
+;mov rdi, style_blue ; bootloader text string style
+;mov rsi, long_mode_note ; bootloader test string
+;call print_long ; print bootloader test string
 
 call kernel_start
 
@@ -134,6 +126,7 @@ jmp $
 
 kernel_start:                   equ 0x8200              ; Kernel is at 1MB
 long_mode_note:                 db `Now running in fully-enabled, 64-bit long mode!`, 0
+long_mode_note2:                db `Now I am here`, 0
 style_blue:                     equ 0x1F
 
 times 512 - ($ - begin_long_mode) db 0x00
