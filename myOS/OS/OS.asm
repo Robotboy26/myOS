@@ -1,15 +1,15 @@
 [bits 64]
 
-mov rsi, welcome
+lea rsi, [welcome]
 call storeString
 
-mov rsi, stringStoragePointer
 call basicPrint
 
 
 jmp $
 
-welcome: db 'welcome', 0
+welcome: 
+    db 'welcome', 0
 
 ; #############
 ; include files
