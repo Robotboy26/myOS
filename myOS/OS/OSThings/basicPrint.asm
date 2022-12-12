@@ -1,5 +1,5 @@
 ; also need constants.asm or
-; 'vgaStart:'; 'styleBlue:' ; 
+; 'vgaStart:'; 'styleBlue:' ; 'stringStoragePointer' ;
 basicPrint:
     ; puch any used registers
     push rdx
@@ -8,18 +8,20 @@ basicPrint:
 
     mov rdx, vgaStart
 
+    mov rsi, stringStoragePointer
+
     mov ah, styleBlue
 
 basicPrintLoop:
-    cmp byte[rsi], 0
-    je  basicPrintDone ; if zero string is done
+    cmp byte [rsi], 0
+    je  basicPrintDone ; if zero, string is done
 
-    mov al, byte[rsi] ; move char to al
+    mov al, byte [rsi] ; move char to al
 
-    mov word[rdx], ax ; move char to vga memory location
+    mov word [rdx], ax ; move char to vga memory location
 
     ; inc counters
-    add rsi, 1
+    inc rsi
     add rdx, 2
 
     jmp basicPrintLoop ; jump back to the loop

@@ -1,17 +1,22 @@
 [bits 64]
 
-mov rsi, coolString
+mov rsi, welcome
+call storeString
+
+mov rsi, stringStoragePointer
 call basicPrint
 
 
 jmp $
 
+welcome: db 'welcome', 0
+
 ; #############
 ; include files
 ; #############
 
+%include "OSThings/Constants.asm"
 %include "OSThings/basicPrint.asm"
-
-coolString db 'welcome', 0
+%include "OSThings/storeString.asm"
 
 times 1024 - ($ - $$) db 0x00
