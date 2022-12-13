@@ -1,14 +1,9 @@
-;
-; Long Mode
-;
-; clear.asm
-;
-
+; ClearLong.asm
 [bits 64]
 
 ; Clear the VGA memory. (AKA write blank spaces to every character slot)
 ; Style in rdi
-clear_long:
+clearLong:
     ; The pusha command stores the values of all
     ; registers so we don't have to worry about them
     push rdi
@@ -18,10 +13,10 @@ clear_long:
     shl rdi, 8
     mov rax, rdi
 
-    mov al, space_char
+    mov al, spaceChar
 
-    mov rdi, vga_start
-    mov rcx, vga_extent / 2
+    mov rdi, vgaStart
+    mov rcx, vgaExtent / 2
 
     rep stosw
 
@@ -31,4 +26,4 @@ clear_long:
     ret
 
 
-space_char:                     equ ` `
+spaceChar:                     equ ` `

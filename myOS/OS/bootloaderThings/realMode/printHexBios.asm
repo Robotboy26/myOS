@@ -1,14 +1,9 @@
-;
-; Long Mode
-;
-; print_hex.asm
-;
-
+; printHexBios.asm
 [bits 16]
 
 ; Define Function print_hex_bios
 ; Input in bx
-print_hex_bios:
+printHexBios:
     ; Save state
     push ax
     push bx
@@ -28,10 +23,10 @@ print_hex_bios:
     mov cx, 4
 
     ; Begin loop
-    print_hex_bios_loop:
+    printHexBiosLoop:
         ; If cx==0 goto end
         cmp cx, 0
-        je print_hex_bios_end
+        je printHexBiosEnd
 
         ; Save bx again
         push bx
@@ -41,7 +36,7 @@ print_hex_bios:
 
         ; Check to see if ge 10
         cmp bx, 10
-        jge print_hex_bios_alpha
+        jge printHexBiosAlpha
 
             ; Byte in bx now < 10
             ; Set the zero char in al, add bl
@@ -49,9 +44,9 @@ print_hex_bios:
             add al, bl
 
             ; Jump to end of loop
-            jmp print_hex_bios_loop_end
+            jmp printHexBiosLoopEnd
 
-        print_hex_bios_alpha:
+        printHexBiosAlpha:
             
             ; Bit is now greater than or equal to 10
             ; Subtract 10 from bl to get add amount
@@ -62,7 +57,7 @@ print_hex_bios:
             add al, bl
 
 
-        print_hex_bios_loop_end:
+        printHexBiosLoopEnd:
 
         ; Print character
         int 0x10
@@ -76,9 +71,9 @@ print_hex_bios:
         dec cx
 
         ; Jump to beginning of loop
-        jmp print_hex_bios_loop
+        jmp printHexBiosLoop
 
-print_hex_bios_end:
+printHexBiosEnd:
     ; Restore state
     pop cx
     pop bx

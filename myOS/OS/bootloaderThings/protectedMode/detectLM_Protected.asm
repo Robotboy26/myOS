@@ -1,13 +1,8 @@
-;
-; Long Mode
-;
-; detect_lm.asm
-;
-
+;detectLM_Protected
 [bits 32]
 
 ; Detect Long Mode
-detect_lm_protected:
+detectLM_Protected:
     pushad
 
     ; Check for CPUID
@@ -38,21 +33,21 @@ detect_lm_protected:
     ; If equal, then the bit got flipped back during copy,
     ; and CPUID is not supported
     cmp eax, ecx
-    je cpuid_not_found_protected        ; Print error and hang if CPUID unsupported
+    je cpuidNotFoundProtected        ; Print error and hang if CPUID unsupported
 
 
     ; Check for extended functions of CPUID
     mov eax, 0x80000000             ; CPUID argument than 0x80000000
     cpuid                           ; Run the command
     cmp eax, 0x80000001             ; See if result is larger than than 0x80000001
-    jb cpuid_not_found_protected    ; If not, error and hang
+    jb cpuidNotFoundProtected    ; If not, error and hang
 
 
     ; Actually check for long mode
     mov eax, 0x80000001             ; Set CPUID argument
     cpuid                           ; Run CPUID
     test edx, 1 << 29               ; See if bit 29 set in edx
-    jz lm_not_found_protected       ; If it is not, then error and hang
+    jz LM_NotFoundProtected       ; If it is not, then error and hang
     
     ; Return from the function
     popad
@@ -60,19 +55,19 @@ detect_lm_protected:
 
 
 ; Print an error message and hang
-cpuid_not_found_protected:
-    call clear_protected
-    mov esi, cpuid_not_found_str
-    call print_protected
+cpuidNotFoundProtected:
+    call clearProtected
+    mov esi, cpuidNotFoundStr
+    call printProtected
     jmp $
 
 
 ; Print an error message and hang
-lm_not_found_protected:
-    call clear_protected
-    mov esi, lm_not_found_str
-    call print_protected
+LM_NotFoundProtected:
+    call clearProtected
+    mov esi, LM_NotFoundStr
+    call printProtected
     jmp $
 
-lm_not_found_str:                   db `ERROR: Long mode not supported. Exiting...`, 0
-cpuid_not_found_str:                db `ERROR: CPUID unsupported, but required for long mode`, 0
+LM_NotFoundStr:                   db `ERROR: Long mode not supported. Exiting...`, 0
+cpuidNotFoundStr:                db `ERROR: CPUID unsupported, but required for long mode`, 0

@@ -1,26 +1,18 @@
-;
-; Long Mode
-;
-; gdt.asm
-;
-
-;
 ; Define the Flat Mode Configuration Global Descriptor Table (GDT)
 ; The flat mode table allows us to read and write code anywhere, without restriction
-;
-
+; GDT_32_start.asm
 [bits 16]
 
-gdt_32_start:
+GDT_32_start:
 
-; Define the null sector for the 32 bit gdt
+; Define the null sector for the 32 bit GDT
 ; Null sector is required for memory integrity check
-gdt_32_null:
+GDT_32_null:
     dd 0x00000000           ; All values in null entry are 0
     dd 0x00000000           ; All values in null entry are 0
 
-; Define the code sector for the 32 bit gdt
-gdt_32_code:
+; Define the code sector for the 32 bit GDT
+GDT_32_code:
     ; Base:     0x00000
     ; Limit:    0xFFFFF
     ; 1st Flags:        0b1001
@@ -45,8 +37,8 @@ gdt_32_code:
     db 0b11001111       ; 2nd Flags, Limit (bits 16-19)
     db 0x00             ; Base  (bits 24-31)
 
-; Define the data sector for the 32 bit gdt
-gdt_32_data:
+; Define the data sector for the 32 bit GDT
+GDT_32_data:
     ; Base:     0x00000
     ; Limit:    0xFFFFF
     ; 1st Flags:        0b1001
@@ -71,15 +63,15 @@ gdt_32_data:
     db 0b11001111       ; 2nd Flags, Limit (bits 16-19)
     db 0x00             ; Base  (bits 24-31)
 
-gdt_32_end:
+GDT_32_end:
 
-; Define the gdt descriptor
-; This data structure gives cpu length and start address of gdt
+; Define the GDT descriptor
+; This data structure gives cpu length and start address of GDT
 ; We will feed this structure to the CPU in order to set the protected mode GDT
-gdt_32_descriptor:
-    dw gdt_32_end - gdt_32_start - 1        ; Size of GDT, one byte less than true size
-    dd gdt_32_start                         ; Start of the 32 bit gdt
+GDT_32_descriptor:
+    dw GDT_32_end - GDT_32_start - 1        ; Size of GDT, one byte less than true size
+    dd GDT_32_start                         ; Start of the 32 bit GDT
 
 ; Define helpers to find pointers to Code and Data segments
-code_seg:                           equ gdt_32_code - gdt_32_start
-data_seg:                           equ gdt_32_data - gdt_32_start
+codeSeg:                           equ GDT_32_code - GDT_32_start
+dataSeg:                           equ GDT_32_data - GDT_32_start

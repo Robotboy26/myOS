@@ -1,13 +1,8 @@
-;
-; Long Mode
-;
-; init_pt.asm
-;
-
+; initPT_Protected.asm
 [bits 32]
 
 ; Initialize the page table
-init_pt_protected:
+initPT_Protected:
     pushad
 
     ; Clear the memory area using rep stosd
@@ -33,11 +28,11 @@ init_pt_protected:
     mov ebx, 0x00000003         ; EBX has address 0x0000 with flags 0x0003
     mov ecx, 512                ; Do the operation 512 times
 
-    add_page_entry_protected:
+    addPageEntryProtected:
         mov dword[edi], ebx
         add ebx, 0x1000
         add edi, 8
-        loop add_page_entry_protected
+        loop addPageEntryProtected
 
     ; Set up PAE paging, but don't enable it quite yet
     mov eax, cr4

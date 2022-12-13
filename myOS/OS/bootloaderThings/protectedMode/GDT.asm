@@ -1,26 +1,18 @@
-;
-; Long Mode
-;
-; gdt.asm
-;
-
-;
 ; Define the Flat Mode Configuration Global Descriptor Table (GDT)
 ; The flat mode table allows us to read and write code anywhere, without restriction
-;
-
+; GDT.asm
 align 4
 
-gdt_64_start:
+GDT_64_start:
 
-; Define the null sector for the 64 bit gdt
+; Define the null sector for the 64 bit GDT
 ; Null sector is required for memory integrity check
-gdt_64_null:
+GDT_64_null:
     dd 0x00000000           ; All values in null entry are 0
     dd 0x00000000           ; All values in null entry are 0
 
-; Define the code sector for the 64 bit gdt
-gdt_64_code:
+; Define the code sector for the 64 bit GDT
+GDT_64_code:
     ; Base:     0x00000
     ; Limit:    0xFFFFF
     ; 1st Flags:        0b1001
@@ -45,8 +37,8 @@ gdt_64_code:
     db 0b10101111       ; 2nd Flags, Limit (bits 16-19)
     db 0x00             ; Base  (bits 24-31)
 
-; Define the data sector for the 64 bit gdt
-gdt_64_data:
+; Define the data sector for the 64 bit GDT
+GDT_64_data:
     ; Base:     0x00000
     ; Limit:    0x00000
     ; 1st Flags:        0b1001
@@ -71,15 +63,15 @@ gdt_64_data:
     db 0b10100000       ; 2nd Flags, Limit (bits 16-19)
     db 0x00             ; Base  (bits 24-31)
 
-gdt_64_end:
+GDT_64_end:
 
-; Define the gdt descriptor
-; This data structure gives cpu length and start address of gdt
+; Define the GDT descriptor
+; This data structure gives cpu length and start address of GDT
 ; We will feed this structure to the CPU in order to set the protected mode GDT
-gdt_64_descriptor:
-    dw gdt_64_end - gdt_64_start - 1        ; Size of GDT, one byte less than true size
-    dd gdt_64_start                         ; Start of the 64 bit gdt
+GDT_64_descriptor:
+    dw GDT_64_end - GDT_64_start - 1        ; Size of GDT, one byte less than true size
+    dd GDT_64_start                         ; Start of the 64 bit GDT
 
 ; Define helpers to find pointers to Code and Data segments
-code_seg_64:                            equ gdt_64_code - gdt_64_start
-data_seg_64:                            equ gdt_64_data - gdt_64_start
+codeSeg_64:                            equ GDT_64_code - GDT_64_start
+dataSeg_64:                            equ GDT_64_data - GDT_64_start

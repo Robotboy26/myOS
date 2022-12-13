@@ -1,5 +1,5 @@
 ; also need constants.asm or
-; 'vgaStart:'; 'styleBlue:' ; 'stringStoragePointer' ;
+; 'vgaStart:'; 'style:' ; 'stringStoragePointer' ;
 basicPrint:
     ; puch any used registers
     push rdx
@@ -10,7 +10,7 @@ basicPrint:
 
     mov rsi, stringStoragePointer
 
-    mov ah, styleBlue
+    mov ah, style
 
 basicPrintLoop:
     cmp byte [rsi], 0

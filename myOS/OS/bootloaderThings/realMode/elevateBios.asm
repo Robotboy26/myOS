@@ -1,13 +1,8 @@
-;
-; Long Mode
-;
-; elevate.asm
-;
-
+; elevateBios.asm
 [bits 16]
 
 ; This function will raise our CPU to the 32-bit protected mode
-elevate_bios:
+elevateBios:
     ; We need to disable interrupts because elevating to 32-bit mode
     ; causes the CPU to go a little crazy. We do this with the 'cli'
     ; command
@@ -15,7 +10,7 @@ elevate_bios:
 
     ; 32-bit protected mode requires the GDT, so we tell the CPU where
     ; it is with the 'lgdt' command
-    lgdt [gdt_32_descriptor]
+    lgdt [GDT_32_descriptor]
 
     ; Enable 32-bit mode by setting bit 0 of the original control
     ; register. We cannot set this directly, so we need to copy the
@@ -27,10 +22,10 @@ elevate_bios:
     ; Now we need to clear the pipeline of all 16-bit instructions,
     ; which we do with a far jump. The address doesn't actually need to
     ; be far away, but the type of jump needs to be specified as 'far'
-    jmp code_seg:init_pm
+    jmp codeSeg:init_PM
 
     [bits 32]
-    init_pm:
+    init_PM:
 
     ; Congratulations! You're now in 32-bit mode!
     ; There's just a bit more setup we need to do before we're ready
@@ -39,7 +34,7 @@ elevate_bios:
     ; We need to tell all segment registers to point to our flat-mode data
     ; segment. If you're curious about what all of these do, you might want
     ; to look on the OSDev Wiki. We will not be using them enough to matter.
-    mov ax, data_seg
+    mov ax, dataSeg
     mov ds, ax
     mov ss, ax
     mov es, ax
@@ -52,4 +47,4 @@ elevate_bios:
     mov esp, ebp
 
     ; Go to the second sector with 32-bit code
-    jmp begin_protected
+    jmp beginProtected

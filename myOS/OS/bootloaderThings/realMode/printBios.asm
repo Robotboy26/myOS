@@ -1,14 +1,9 @@
-;
-; Long Mode
-;
-; print.asm
-;
-
+; printBios.asm
 [bits 16]
 
 ; Define function print_bios
 ; Input pointer to string in bx
-print_bios:
+printBios:
     ; Save state
     push ax
     push bx
@@ -17,11 +12,11 @@ print_bios:
     mov ah, 0x0E
 
 
-    print_bios_loop:
+    printBiosLoop:
 
         ; Null Check
         cmp byte[bx], 0
-        je print_bios_end
+        je printBiosEnd
 
         ; Print Character
         mov al, byte[bx]
@@ -29,11 +24,11 @@ print_bios:
 
         ; Increment pointer and reenter loop
         inc bx
-        jmp print_bios_loop
+        jmp printBiosLoop
 
 
 ; End of print_bios
-print_bios_end:
+printBiosEnd:
 
     ; Restore State
     pop bx

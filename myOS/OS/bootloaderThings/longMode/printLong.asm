@@ -13,7 +13,7 @@
 
 ; Simple 32-bit protected print routine
 ; Style stored in rdi, message stored in rsi
-print_long:
+printLong:
     ; The pusha command stores the values of all
     ; registers so we don't have to worry about them
     push rax
@@ -21,18 +21,18 @@ print_long:
     push rdi
     push rsi
 
-    mov rdx, vga_start
+    mov rdx, vgaStart
     shl rdi, 8
 
     ; Do main loop
-    print_long_loop:
+    printLongLoop:
         ; If char == \0, string is done
         cmp byte[rsi], 0
-        je  print_long_done
+        je  printLongDone
 
         ; Handle strings that are too long
-        cmp rdx, vga_start + vga_extent
-        je print_long_done
+        cmp rdx, vgaStart + vgaExtent
+        je printLongDone
 
         ; Move character to al, style to ah
         mov rax, rdi
@@ -42,13 +42,13 @@ print_long:
         mov word[rdx], ax
 
         ; Increment counter registers
-        add rsi, 1
+        inc rsi
         add rdx, 2
 
         ; Redo loop
-        jmp print_long_loop
+        jmp printLongLoop
 
-print_long_done:
+printLongDone:
     ; Popa does the opposite of pusha, and restores all of
     ; the registers
     pop rsi
