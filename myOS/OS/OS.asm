@@ -1,5 +1,11 @@
 [bits 64]
-lea  rsi, [rel helloworld] ; this is interesting but works
+
+lea  rsi, [rel helloworld] ; this is interesting but it works
+call storeString
+
+call basicPrint
+
+lea  rsi, [rel hello2] ; this is interesting but it works
 call storeString
 
 call basicPrint
@@ -13,12 +19,16 @@ jmp $
 helloworld:
     db 'hello world', 0
 
+hello2:
+    db 'yoyoyoyoyoyoyo', 0
+
 ; #############
 ; include files
 ; #############
 
+%include "OSThings/KeyboardDriver/KeyboardDriver.asm"
+%include "OSThings/VGADriver/VGADriver.asm"
 %include "OSThings/Constants.asm"
-%include "OSThings/basicPrint.asm"
 %include "OSThings/storeString.asm"
 
 times 1024 - ($ - $$) db 0x00

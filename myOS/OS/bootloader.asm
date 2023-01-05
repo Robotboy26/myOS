@@ -127,6 +127,6 @@ jmp $
 kernelStart:                   equ 0x8200              ; Kernel is at 1MB
 longModeNote:                 db `Now running in fully-enabled, 64-bit long mode!`, 0
 longModeNote2:                db `Now I am here`, 0
-styleBlue:                     equ 0x1F
+styleBlue:                    equ 0x1F
 
 times 512 - ($ - beginLongMode) db 0x00
