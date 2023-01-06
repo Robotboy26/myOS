@@ -31,43 +31,10 @@ mov cx, 0x0004
 ; different sectors of the bootloader.
 mov dx, 0x7E00
 
-pusha
-mov  ax,  0x2401
-int  0x15
-popa
-
-pusha
-cli
-in  al , 0x92
-or  al , 2
-out   0x92 , al
-sti
-popa
-
-pusha
-cli
-mov   al , 0x11
-out   0x20 , al
-out   0xA0 , al
-mov   al , 0x20
-out   0x21 , al
-mov   al , 0x28
-out   0xA1 , al
-
-mov   al , 0x04
-out   0x21 , al
-mov   al , 0x02
-out   0xA1 , al
-mov   al , 0x01
-out   0x21 , al
-out   0xA1 , al
-sti
-popa
-
 ; Now we're fine to load the new sectors
 call loadBios
 
-; And elevate our CPU to 32-bit mode
+; Elevate our CPU to 32-bit mode
 call elevateBios
 
 ; Infinite Loop
@@ -135,13 +102,14 @@ vgaExtent:                 equ 80 * 25 * 2             ; VGA Memory is 80 chars 
 styleWB:                   equ 0x0F
 
 ; Define messages
-protectedAlert:                 db `64-bit long mode supported`, 0
+protectedAlert:                 db '64-bit long mode supported', 0
 
 ; Fill with zeros to the end of the sector
 times 512 - ($ - bootsectorExtended) db 0x00
 beginLongMode:
 
 [bits 64]
+
 
 mov rdi, styleBlue
 call clearLong

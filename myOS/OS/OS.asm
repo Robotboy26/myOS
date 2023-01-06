@@ -5,11 +5,6 @@ call storeString
 
 call basicPrint
 
-lea  rsi, [rel hello2] ; this is interesting but it works
-call storeString
-
-call basicPrint
-
 jmp $
 
 ; #######
@@ -18,9 +13,6 @@ jmp $
 
 helloworld:
     db 'hello world', 0
-
-hello2:
-    db 'yoyoyoyoyoyoyo', 0
 
 ; #############
 ; include files
