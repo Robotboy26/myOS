@@ -6,7 +6,7 @@ WORKDIR /src
 # [Optional] Uncomment this section to install additional OS packages you may want.
 USER root
 RUN apt-get update
-RUN apt-get -y install ghex
+RUN apt-get -y install hexcurse
 RUN apt-get -y install nasm
 RUN apt-get -y install qemu
 RUN apt-get -y install qemu-system-x86
