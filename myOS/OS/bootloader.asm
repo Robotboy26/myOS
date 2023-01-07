@@ -66,6 +66,15 @@ dw 0xAA55
 ; BEGIN SECOND SECTOR. THIS ONE CONTAINS 32-BIT CODE ONLY
 
 bootsectorExtended:
+; check and possible enable A20
+; INCLUDES
+%include "bootloaderThings/realMode/checkA20.asm"
+%include "bootloaderThings/realMode/enableA20.asm"
+
+call enableA20
+
+A20Enabled:
+
 beginProtected:
 
 [bits 32]
@@ -125,7 +134,7 @@ jmp $
 %include "bootloaderThings/longMode/clearLong.asm"
 %include "bootloaderThings/longMode/printLong.asm"
 
-kernelStart:                   equ 0x8200              ; Kernel is at 1MB
+kernelStart:                   equ 0x8400              ; Kernel is at 1MB
 longModeNote:                 db `Now running in fully-enabled, 64-bit long mode!`, 0
 longModeNote2:                db `Now I am here`, 0
 styleBlue:                    equ 0x1F

@@ -57,3 +57,21 @@ enableA20:
     call checkA20
     cmp ax, 1
     je A20Enabled
+
+
+    ; 3rd way to enable A20 if this dosen't work that we assume that A20 is not enabled on the computer.
+    in al, 0x92
+    or al, 2
+    out 0x92, al
+
+
+    call checkA20
+    cmp ax, 1
+    je A20Enabled
+
+    mov bx, msgA20notAvalable
+    call printBios
+    hlt
+
+    msgA20notAvalable:
+      db 'A20 is not Avalable', 0
