@@ -23,8 +23,8 @@ call printBios
 ; of the drive. Note: Only bl will be used
 mov bx, 0x0002
 
-; Now we want to load 4 sectors for the bootloader and kernel
-mov cx, 0x0004
+; Now we want to load 5 sectors for the bootloader and kernel
+mov cx, 0x0005
 
 ; Finally, we want to store the new sector immediately after the first
 ; loaded sector, at adress 0x7E00. This will help a lot with jumping between
@@ -105,7 +105,7 @@ styleWB:                   equ 0x0F
 protectedAlert:                 db '64-bit long mode supported', 0
 
 ; Fill with zeros to the end of the sector
-times 512 - ($ - bootsectorExtended) db 0x00
+times 1024 - ($ - bootsectorExtended) db 0x00
 beginLongMode:
 
 [bits 64]
