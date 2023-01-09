@@ -73,7 +73,17 @@ bootsectorExtended:
 
 call enableA20
 
+IDT:
+    dw 2048  ; Size of IDT (256 entries of 8 bytes)
+    dd 0x0   ; Linear address of IDT
+
+loadIDT:
+  lidt [IDT]
+  ret
+
 A20Enabled:
+
+call loadIDT
 
 beginProtected:
 
@@ -134,7 +144,7 @@ jmp $
 %include "bootloaderThings/longMode/clearLong.asm"
 %include "bootloaderThings/longMode/printLong.asm"
 
-kernelStart:                   equ 0x8400              ; Kernel is at 1MB
+kernelStart:                   equ 0x8400
 longModeNote:                 db `Now running in fully-enabled, 64-bit long mode!`, 0
 longModeNote2:                db `Now I am here`, 0
 styleBlue:                    equ 0x1F
