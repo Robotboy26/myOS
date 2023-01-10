@@ -1,6 +1,7 @@
 isr_common_stub:
     ; push general purpose registers
-    pusha
+    mov ds, eax
+    push rax
 
     ; push data segment selector
     mov ax, ds
@@ -13,24 +14,25 @@ isr_common_stub:
     mov fs, ax
     mov gs, ax
     ; hand over stack to C function
-    push esp
+    push rsp
     ; and call it
     ;call isr_handler
     ; pop stack pointer again
-    pop eax
+    pop rax
 
     ; restore original segment pointers segment
-    pop eax
+    pop rax
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
 
     ; restore registers
-    popa
+    pop rax
+    mov eax, ds
 
     ; remove int_no and err_code from stack
-    add esp, 8
+    add rsp, 8
 
     ; pops cs, eip, eflags, ss, and esp
     ; https://www.felixcloutier.com/x86/iret:iretd
