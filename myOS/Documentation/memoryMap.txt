@@ -1,6 +1,0 @@
-
-
-0x0500 > 0x0502 # stack2PointerPointer
-0x0502 > 0x0
-
-0x1000 > 0x0 # used for storeing strings to be writen to the display

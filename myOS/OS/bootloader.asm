@@ -71,12 +71,13 @@ bootsectorExtended:
 %include "bootloaderThings/realMode/secondHalf/checkA20.asm"
 %include "bootloaderThings/realMode/secondHalf/enableA20.asm"
 %include "bootloaderThings/realMode/secondHalf/loadIDT.asm"
+%include "bootloaderThings/realMode/secondHalf/PICRemap.asm"
 
 
 call enableA20
 A20Enabled:
 
-call loadIDT
+;call loadIDT
 
 beginProtected:
 
@@ -117,7 +118,7 @@ styleWB:                   equ 0x0F
 protectedAlert:                 db '64-bit long mode supported', 0
 
 ; Fill with zeros to the end of the sector
-times 1024 - ($ - bootsectorExtended) db 0x00
+times 1536 - ($ - bootsectorExtended) db 0x00
 beginLongMode:
 
 [bits 64]
@@ -135,9 +136,10 @@ call kernelStart
 jmp $
 
 %include "bootloaderThings/longMode/clearLong.asm"
+%include "bootloaderThings/longMode/ISRHandler.asm"
 %include "bootloaderThings/longMode/printLong.asm"
 
-kernelStart:                   equ 0x8400
+kernelStart:                   equ 0x8600
 longModeNote:                 db `Now running in fully-enabled, 64-bit long mode!`, 0
 longModeNote2:                db `Now I am here`, 0
 styleBlue:                    equ 0x1F

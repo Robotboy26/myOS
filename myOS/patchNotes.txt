@@ -24,3 +24,7 @@ then type 'pop' to now get it of in proper order.
 
 11/6/22:
 1. add the readSector command for stuff
+
+1/9:
+1. have not sayed anything for a while but did a lot this 
+I got the IDT today will have to implement the keyboard to check

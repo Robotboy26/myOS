@@ -5,6 +5,14 @@ call storeString
 
 call basicPrint
 
+mov cx, 0
+
+temp:
+    push 1
+    inc cx
+    cmp cx, 350
+    jne temp
+
 jmp $
 
 ; #######
