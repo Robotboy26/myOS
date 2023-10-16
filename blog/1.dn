@@ -1,0 +1,62 @@
+!Make your own x86 64-bit operating system!
+
+Hello world, I am going to document my journey on making my own x86 64-bit operating system using only assembly (at least for the time being).
+
+Ok let's start with the setup of the project and go over what I am using.
+
+OS:
+  -Ubuntu22.04
+
+Tools:
+  -Git
+  -Qemu (for emulation)
+  -Nasm (the assembler)
+  -Neovim (or the editor of your choice)
+
+Throughout this project this project I will use many different sources and references to help me:
+  -Pure64 (https://github.com/ReturnInfinity/Pure64)
+  -BareMetal-OS (https://github.com/ReturnInfinity/BareMetal-OS)
+  -myOS-Archive (some of my old attempts at do this project) (https://github.com/Robotboy26/myOS-Archive)
+
+Install the tools I am using:
+
+-
+sudo apt install git qemu qemu-system-x86 nasm Neovim
+-
+
+Enviroment setup, open up your terminal (Ctrl-Alt-t):
+if you want to get started with the latest code
+
+-
+git clone https://github.com/Robotboy26/myOS
+cd myOS
+-
+
+if you want to follow along with my
+
+-
+mkdir myOS
+cd myOS
+mkdir src
+cd src
+-
+
+We are now going to now create a shell file that will automaticlly compile the source and load it onto a virtual drive and launch it with Qemu (CPU emulation) we are going to name this file "qemu.sh". In this file we are first going to remove any past binarys then asssembly 3 files using Nasm. These files are "mbr.asm" (Master Boot Record) this will be a 512 byte file that will be the first stage of our bootloader. The MBR will (roughly) start off in 16-bit mode then elevate to 32-bit, then 64-bit mode. Somewhere in there the MBR will activate the A20 line (I will explain this later). Finally the MBR will read the bootloader file into memory and run it. The second file will be "bootloader.asm" this is the second part of our bootloader that will be loaded by the MBR. this second bootloader will do a great many things the most notable in my opinion is the IDT but we will get to that much later. Finally will will assembly the actual operating system code. Right after assembling we will combine the second part of the bootloader and all of the operating system code into one file (this will be important later).
+
+After assembling the source code the build script will use the linux dd command to create a virtual disk with 128 megabytes. We will then use the dd command to write the MBR to the first sector of the virtual drive (a sector is 512 bytes (we will go over this more later)). We will also use the dd command to write the rest of the code in the newly combined file containing the compiled second bootloader stage and operating system code. Finally will will use the Qemu emulator to lauch the operating system while mounting our virtual drive.
+
+--- qemu.sh -
+rm -r bin
+mkdir bin
+
+nasm mbr.asm -o bin/mbr.bin
+nasm bootloader.asm -o bin/bootloader.bin
+nasm os.asm -o bin/os.asm
+cat bin/bootloader.bin bin/os.bin > bin/mos.bin
+sudo dd if=/dev/zero of=bin/disk.img count=8 bs=1048576
+sudo dd if=bin/mbr.bin of=bin/disk.img conv=notrunc
+sudo dd if=bin/mos.bin of=bin/disk.img bs=512 seek=16 conv=notrunc
+sudo qemu-system-x86_64 -drive format=raw,file=bin/disk.img
+---
+
+
