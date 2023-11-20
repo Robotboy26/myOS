@@ -2,7 +2,7 @@
 
 Hello world, I am going to document my journey on making my own x86 64-bit operating system using only assembly (at least for the time being).
 
-Ok let's start with the setup of the project and go over what I am using.
+Ok, let's start with the setup of the project and go over what I am using.
 
 OS:
   -Ubuntu22.04
@@ -16,9 +16,9 @@ Tools:
 Throughout this project this project I will use many different sources and references to help me:
   -Pure64 (https://github.com/ReturnInfinity/Pure64)
   -BareMetal-OS (https://github.com/ReturnInfinity/BareMetal-OS)
-  -myOS-Archive (some of my old attempts at do this project) (https://github.com/Robotboy26/myOS-Archive)
+  -myOS-Archive (some of my old attempts at doing this project) (https://github.com/Robotboy26/myOS-Archive)
 
-Before we get to far into there are somethings that it would be helpful to know throughout this project. Although there are breif descriptions these are more to remind you about these topics instead of teaching you them. With that being said here are some words you should know and some websites you can find infomation on.
+Before we get too far into there are some things that it would be helpful to know throughout this project. Although there are brief descriptions these are more to remind you about these topics instead of teaching them. With that being said here are some words you should know and some websites you can find information on.
 
 BIOS - <website here>
 <put some more words here>
@@ -29,7 +29,7 @@ Install the tools I am using:
 sudo apt install git qemu qemu-system-x86 nasm Neovim
 -
 
-Enviroment setup, open up your terminal (Ctrl-Alt-t):
+Environment setup, open up your terminal (Ctrl-Alt-t):
 if you want to get started with the latest code
 
 -
@@ -50,9 +50,9 @@ touch boot/bootloader.asm
 touch boot/os.asm
 -
 
-We are now going to now create a shell file that will automaticlly compile the source and load it onto a virtual drive and launch it with Qemu (CPU emulation) we are going to name this file "qemu.sh". In this file we are first going to remove any past binarys then asssembly 3 files using Nasm. These files are "mbr.asm" (Master Boot Record) this will be a 512 byte file that will be the first stage of our bootloader. The MBR will (roughly) start off in 16-bit mode then elevate to 32-bit, then 64-bit mode. Somewhere in there the MBR will activate the A20 line (I will explain this later). Finally the MBR will read the bootloader file into memory and run it. The second file will be "bootloader.asm" this is the second part of our bootloader that will be loaded by the MBR. this second bootloader will do a great many things the most notable in my opinion is the IDT but we will get to that much later. Finally will will assembly the actual operating system code. Right after assembling we will combine the second part of the bootloader and all of the operating system code into one file (this will be important later).
+We are now going to create a shell file that will automatically compile the source and then load it onto a virtual drive and launch it with Qemu (CPU emulation) we are going to name this file "qemu.sh". In this file, we are first going to remove any past binaries and then assemble 3 files using Nasm. These files are "mbr.asm" (Master Boot Record) this will be a 512-byte file that will be the first stage of our bootloader. The MBR will (roughly) start in 16-bit mode then elevate to 32-bit, then 64-bit mode. Somewhere in there, the MBR will activate the A20 line (I will explain this later). Finally, the MBR will read the bootloader file into memory and run it. The second file will be "bootloader.asm" this is the second part of our bootloader that will be loaded by the MBR. this second bootloader will do a great many things the most notable in my opinion is the IDT but we will get to that much later. Finally will will assemble the actual operating system code. Right after assembling, we will combine the second part of the bootloader and all of the operating system code into one file (this will be important later).
 
-After assembling the source code the build script will use the linux dd command to create a virtual disk with 128 megabytes. We will then use the dd command to write the MBR to the first sector of the virtual drive (a sector is 512 bytes (we will go over this more later)). We will also use the dd command to write the rest of the code in the newly combined file containing the compiled second bootloader stage and operating system code. Finally will will use the Qemu emulator to lauch the operating system while mounting our virtual drive.
+After assembling the source code the build script will use the linux dd command to create a virtual disk with 128 megabytes. We will then use the dd command to write the MBR to the first sector of the virtual drive (a sector is 512 bytes (we will go over this later)). We will also use the dd command to write the rest of the code in the newly combined file containing the compiled second bootloader stage and operating system code. Finally will will use the Qemu emulator to launch the operating system while mounting our virtual drive.
 
 --- qemu.sh -
 rm -r bin
@@ -68,7 +68,7 @@ sudo dd if=bin/mos.bin of=bin/disk.img bs=512 seek=16 conv=notrunc
 sudo qemu-system-x86_64 -drive format=raw,file=bin/disk.img
 ---
 
-Save and close qemu.sh and create a new file is the boot directory called mbr.asm that is what we will be working on next.
+Save and close qemu.sh and create a new file in the boot directory called mbr.asm that is what we will be working on next.
 
 -
 nvim boot.mbr.asm
@@ -81,7 +81,7 @@ nvim boot.mbr.asm
 %define SEGMENT 0x0000
 ---
 
-First we will define 4 constants that will be used later.
+First, we will define 4 constants that will be used later.
 
 --- mbr.asm -
 
@@ -100,11 +100,11 @@ entry:  ; most of this should be set by default but it is best to explicitly set
 	sti				; Enable interrupts
 ---
 
-Now we will do a few more things first tell the NASM (the assembler) that we will be writing 16 bit assembly. You might be thinking "Wait why would we use 16 bit assembly I thought we were making a 64 bit operating system". The reason why we start with 16 bit is because even though modern CPUs can run 64 bit there was a time when 16 bit was the only thing they could run and for compatibility reasons we still start in 16 bit mode. This might sound like a bad thing, that we have to go through 16 bit assembly before we can use 64 bit assembly and in some regards this is true it does make it a bit more annoying. One of the benifits with starting in 16 bit mode is you have access to BIOS interrupts these will make it much easier to do something we will talk about shortly.
+Now we will do a few more things first tell the NASM (the assembler) that we will be writing a 16-bit assembly. You might be thinking "Wait why would we use 16-bit assembly I thought we were making a 64-bit operating system". The reason why we start with 16-bit is because even though modern CPUs can run 64-bit there was a time when 16-bit was the only thing they could run and for compatibility reasons, we still start in 16-bit mode. This might sound like a bad thing, that we have to go through 16-bit assembly before we can use 64-bit assembly and in some regards this is true it does make it a bit more annoying. One of the benefits of starting in 16-bit mode is that you have access to BIOS interrupts these will make it much easier to do something we will talk about shortly.
 
-The 2nd line (in this segment) "org 0x7C00" is the normal offset for where the bootloader starts meaning this is where the BIOS hands off control to the bootloader. the next part "entry:" is called a lable it is not converted to assembly but is instead used but the assembler to do more commplex things that are normaly possible in assembly. Lables are mostly used when doing jumps as you will see later but in this situation this lable is never used to jump to or anything like that it is instead just more the person reading the code to better tell what is going on and segment the code to make it easier to digest. As the comment on this line says "most of this should be set by default but it is best to explicitly set it" this is just telling you that the code withing this lable told by the indent (although the indent is not required by the assembler I fell it is best to show it with an indent). 
+The 2nd line (in this segment) "org 0x7C00" is the normal offset for where the bootloader starts meaning this is where the BIOS hands off control to the bootloader. the next part "entry:" is called a lable it is not converted to assembly but is instead used but the assembler to do more complex things that are normally possible in assembly. Labels are mostly used when doing jumps as you will see later but in this situation, this label is never used to jump to or anything like that it is instead just more for the person reading the code to better tell what is going on and segment the code to make it easier to digest. As the comment on this line says "Most of this should be set by default but it is best to explicitly set it" This is just telling you that the code within this label is told by the indent (although the indent is not required by the assembler I fell it is best to show it with an indent). 
 
-Lets get into what these next lines are doing, hopefully it should be pretty self explainitory I will quickly go over it. The command "cli" is used to disable interrupts this is specifily talking about hardware interrupts which we will fully cover later so you don't have to worry about it to much right now but for a short example hardware interrupts include things like the computer clock, the keyboard, and the mouse. The next line "cld" is the command to clear the directional flag <add more stuff here>. The next few lines up until "sti" have to do with reseting the stack if you do not know the stack it's a FILO (First In Last Out) memory structure. This is best explained with an example. Think about a stack of plate where you write a number onto each plate, you put one plate down then 2 plates down and instead of being able to take of the first plate you first need to take of the second plate or in other words the first plate you put down is the last one you will take off<Provide a better example or a link>. How you reset we reset the stack and it is pretty simple first the line "xor eax, eax" this will floor the number if you don't know what that means it just means set the number to zero. You might be wondering why we xor eax with it self instead of doing somthing like mov eax, 0. The reason why we use xor eax, eax is just becuase it is "safer" and it's just the more correct way to do it. Once we have zero in the eax register we can move the eax register into other registers to also set them to zero. Again you might be wondering why we do it this way and it's mosly just because it's the accepted way to do it. we will set the ss, es, and ds register to zero these registers are <add a description for these registers>. And we will set the sp or stack pointer register to 0x7C00 (also knowen as where the bootloader starts) and the stack will move down meaning the sp register will get smaller as you add things to the stack.
+Let's get into what these next lines are doing, hopefully, it should be pretty self-explanatory I will quickly go over it. The command "cli" is used to disable interrupts this is specifily talking about hardware interrupts which we will fully cover later so you don't have to worry about it too much right now but for a short example hardware interrupts include things like the computer clock, the keyboard, and the mouse. The next line "cld" is the command to clear the directional flag <add more stuff here>. The next few lines up until "sti" have to do with resetting the stack if you do not know the stack it's a FILO (First In Last Out) memory structure. This is best explained with an example. Think about a stack of plates where you write a number onto each plate, you put one plate down then 2 plates down and instead of being able to take off the first plate you first need to take off the second plate or in other words, the first plate you put down is the last one you will take off<Provide a better example or a link>. How you reset we reset the stack and it is pretty simple first the line "xor eax, eax" This will floor the number if you don't know what that means it just means set the number to zero. You might be wondering why we xor eax with itself instead of doing something like mov eax, 0. The reason why we use xor eax, eax is just because it is "safer" and it's just the correct way to do it. Once we have zero in the eax register we can move the eax register into other registers to also set them to zero. Again you might be wondering why we do it this way and it's mostly just because it's the accepted way to do it. we will set the ss, es, and ds registers to zero these registers are <add a description for these registers>. And we will set the sp or stack pointer register to 0x7C00 (also known as where the bootloader starts) and the stack will move down meaning the sp register will get smaller as you add things to the stack.
 
 
 	mov [DriveNumber], dl		; BIOS passes drive number in DL
