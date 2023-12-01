@@ -18,7 +18,7 @@ Throughout this project this project I will use many different sources and refer
   -BareMetal-OS (https://github.com/ReturnInfinity/BareMetal-OS)
   -myOS-Archive (some of my old attempts at doing this project) (https://github.com/Robotboy26/myOS-Archive)
 
-Before we get too far into there are some things that it would be helpful to know throughout this project. Although there are brief descriptions these are more to remind you about these topics instead of teaching them. With that being said here are some words you should know and some websites you can find information on.
+Before we get too far into there are some things that it would be helpful to know throughout this project. Although there are brief descriptions, these are more to remind you about these topics instead of teaching them. With that being said here are some words you should know and some websites you can find information on.
 
 BIOS - <website here>
 <put some more words here>
@@ -29,7 +29,7 @@ Install the tools I am using:
 sudo apt install git qemu qemu-system-x86 nasm Neovim
 -
 
-Environment setup, open up your terminal (Ctrl-Alt-t):
+Environment setup, open up your terminal (‘Ctrl-Alt-t’ for Ubuntu):
 if you want to get started with the latest code
 
 -
@@ -50,9 +50,9 @@ touch boot/bootloader.asm
 touch boot/os.asm
 -
 
-We are now going to create a shell file that will automatically compile the source and then load it onto a virtual drive and launch it with Qemu (CPU emulation) we are going to name this file "qemu.sh". In this file, we are first going to remove any past binaries and then assemble 3 files using Nasm. These files are "mbr.asm" (Master Boot Record) this will be a 512-byte file that will be the first stage of our bootloader. The MBR will (roughly) start in 16-bit mode then elevate to 32-bit, then 64-bit mode. Somewhere in there, the MBR will activate the A20 line (I will explain this later). Finally, the MBR will read the bootloader file into memory and run it. The second file will be "bootloader.asm" this is the second part of our bootloader that will be loaded by the MBR. this second bootloader will do a great many things the most notable in my opinion is the IDT but we will get to that much later. Finally will will assemble the actual operating system code. Right after assembling, we will combine the second part of the bootloader and all of the operating system code into one file (this will be important later).
+We are now going to create a shell file that will automatically compile the source and then load it onto a virtual drive and launch it with Qemu (CPU emulation). We are going to name this file "qemu.sh". In this file, we are first going to remove any past binaries and then assemble 3 files using Nasm. These files are "mbr.asm" (Master Boot Record). This will be a 512-byte file that will be the first stage of our bootloader. The MBR will (roughly) start in 16-bit mode then elevate to 32-bit, then 64-bit mode. Somewhere in there, the MBR will activate the A20 line (I will explain this later). Finally, the MBR will read the bootloader file into memory and run it. The second file will be "bootloader.asm". This is the second part of our bootloader that will be loaded by the MBR. This second bootloader will do a great many things. The most notable in my opinion is the IDT but we will get to that much later. Finally will assemble the actual operating system code. Right after assembling, we will combine the second part of the bootloader and all of the operating system code into one file (this will be important later).
 
-After assembling the source code the build script will use the linux dd command to create a virtual disk with 128 megabytes. We will then use the dd command to write the MBR to the first sector of the virtual drive (a sector is 512 bytes (we will go over this later)). We will also use the dd command to write the rest of the code in the newly combined file containing the compiled second bootloader stage and operating system code. Finally will will use the Qemu emulator to launch the operating system while mounting our virtual drive.
+After assembling the source code the build script will use the linux dd command to create a virtual disk with 128 megabytes. We will then use the dd command to write the MBR to the first sector of the virtual drive (a sector is 512 bytes (we will go over this later)). We will also use the dd command to write the rest of the code in the newly combined file containing the compiled second bootloader stage and operating system code. Finally we will use the Qemu emulator to launch the operating system after mounting a virtual drive with the operating system inside.
 
 --- qemu.sh -
 rm -r bin
@@ -75,10 +75,12 @@ nvim boot.mbr.asm
 -
 
 --- mbr.asm -
+
 %define SECTORS 64
 %define STARTSECTOR 16
 %define ADDRESS 0x8000
 %define SEGMENT 0x0000
+
 ---
 
 First, we will define 4 constants that will be used later.
@@ -89,164 +91,171 @@ BITS 16
 org 0x7C00 ; This is the normal bootloader start location and should not be changed.
  
 entry:  ; most of this should be set by default but it is best to explicitly set it.
-	cli				; Disable interrupts
-	cld				; Clear direction flag
-            ; reset the stack
-	xor eax, eax ; floor eax
-	mov ss, ax
-	mov es, ax
-	mov ds, ax
-	mov sp, 0x7C00   ; the stack moves down from this location.
-	sti				; Enable interrupts
+    cli   			 ; Disable interrupts
+    cld   			 ; Clear direction flag
+        	; reset the stack
+    xor eax, eax ; floor eax
+    mov ss, ax
+    mov es, ax
+    mov ds, ax
+    mov sp, 0x7C00   ; the stack moves down from this location.
+    sti   			 ; Enable interrupts
+
 ---
 
-Now we will do a few more things first tell the NASM (the assembler) that we will be writing a 16-bit assembly. You might be thinking "Wait why would we use 16-bit assembly I thought we were making a 64-bit operating system". The reason why we start with 16-bit is because even though modern CPUs can run 64-bit there was a time when 16-bit was the only thing they could run and for compatibility reasons, we still start in 16-bit mode. This might sound like a bad thing, that we have to go through 16-bit assembly before we can use 64-bit assembly and in some regards this is true it does make it a bit more annoying. One of the benefits of starting in 16-bit mode is that you have access to BIOS interrupts these will make it much easier to do something we will talk about shortly.
+Now we will do a few more things first tell the NASM (the assembler) that we will be writing a 16-bit assembly. You might be thinking "Wait, why would we use 16-bit assembly? I thought we were making a 64-bit operating system". The reason why we start with 16-bit is because even though modern CPUs can run 64-bit there was a time when 16-bit was the only thing they could run and for compatibility reasons, we still started in 16-bit mode. This might sound like a bad thing, that we have to go through 16-bit assembly before we can use 64-bit assembly and in some regards this is true it does make it a bit more annoying. One of the benefits of starting in 16-bit mode is that you have access to BIOS interrupts; these will make it much easier to do many things we will talk about shortly.
 
-The 2nd line (in this segment) "org 0x7C00" is the normal offset for where the bootloader starts meaning this is where the BIOS hands off control to the bootloader. the next part "entry:" is called a lable it is not converted to assembly but is instead used but the assembler to do more complex things that are normally possible in assembly. Labels are mostly used when doing jumps as you will see later but in this situation, this label is never used to jump to or anything like that it is instead just more for the person reading the code to better tell what is going on and segment the code to make it easier to digest. As the comment on this line says "Most of this should be set by default but it is best to explicitly set it" This is just telling you that the code within this label is told by the indent (although the indent is not required by the assembler I fell it is best to show it with an indent). 
+The 2nd line (in this segment) "org 0x7C00" is the normal offset for where the bootloader starts meaning this is where the BIOS hands off control to the bootloader. The next part "entry:" is called a label; it is not converted to assembly but is instead used by the assembler to do more complex things that are normally possible in assembly. Labels are mostly used when doing jumps as you will see later but in this situation, this label is never used to jump to or anything like that it is instead just more for the person reading the code to better tell what is going on and segment the code to make it easier to digest. As the comment on this line says "Most of this should be set by default but it is best to explicitly set it" This is just telling you that the code within this label is told by the indent (although the indent is not required by the assembler I feel it is best to show it with an indent).
 
-Let's get into what these next lines are doing, hopefully, it should be pretty self-explanatory I will quickly go over it. The command "cli" is used to disable interrupts this is specifily talking about hardware interrupts which we will fully cover later so you don't have to worry about it too much right now but for a short example hardware interrupts include things like the computer clock, the keyboard, and the mouse. The next line "cld" is the command to clear the directional flag <add more stuff here>. The next few lines up until "sti" have to do with resetting the stack if you do not know the stack it's a FILO (First In Last Out) memory structure. This is best explained with an example. Think about a stack of plates where you write a number onto each plate, you put one plate down then 2 plates down and instead of being able to take off the first plate you first need to take off the second plate or in other words, the first plate you put down is the last one you will take off<Provide a better example or a link>. How you reset we reset the stack and it is pretty simple first the line "xor eax, eax" This will floor the number if you don't know what that means it just means set the number to zero. You might be wondering why we xor eax with itself instead of doing something like mov eax, 0. The reason why we use xor eax, eax is just because it is "safer" and it's just the correct way to do it. Once we have zero in the eax register we can move the eax register into other registers to also set them to zero. Again you might be wondering why we do it this way and it's mostly just because it's the accepted way to do it. we will set the ss, es, and ds registers to zero these registers are <add a description for these registers>. And we will set the sp or stack pointer register to 0x7C00 (also known as where the bootloader starts) and the stack will move down meaning the sp register will get smaller as you add things to the stack.
+Let's get into what these next lines are doing, hopefully, it should be pretty self-explanatory. I will quickly go over it. The command "cli" is used to disable interrupts. This is specifically talking about hardware interrupts which we will fully cover later so you don't have to worry about it too much right now but for a short example hardware interrupts include things like the computer clock, the keyboard, and the mouse. The next line "cld" is the command to clear the directional flag <add more stuff here>. The next few lines up until "sti'' have to do with resetting the stack if you do not know the stack it's a FILO (First In Last Out) memory structure. This is best explained with an example. Think about a stack of plates where you write a number onto each plate, you put one plate down then 2 plates down and instead of being able to take off the first plate you first need to take off the second plate or in other words, the first plate you put down is the last one you will take off<Provide a better example or a link>. How you reset we reset the stack and it is pretty simple first the line "xor eax, eax" This will floor the number if you don't know what that means it just means set the number to zero. You might be wondering why we xor eax with itself instead of doing something like mov eax, 0. The reason why we use xor eax, eax is just because it is "safer" and it's just the correct way to do it. Once we have zero in the eax register we can move the eax register into other registers to also set them to zero. Again you might be wondering why we do it this way and it's mostly just because it's the accepted way to do it. we will set the ss, es, and ds registers to zero. These registers are <add a description for these registers>. And we will set the sp or stack pointer register to 0x7C00 (also known as where the bootloader starts) and the stack will move down meaning the sp register will get smaller as you add things to the stack.
 
+— mbr.asm -
 
-	mov [DriveNumber], dl		; BIOS passes drive number in DL
+    mov [DriveNumber], dl   	 ; BIOS passes drive number in dl
 
-	mov ah, 0
-	mov al, 11100011b		; 9600bps, no parity, 1 stop bit, 8 data bits
-	mov dx, 0			; Serial port 0
-	int 0x14			; Configure serial port
+    ; reference https://www.ctyme.com/intr/int-14.htm
+    mov ah, 0
+    mov al, 11100011b   ; 9600bps, no parity, 1 stop bit, 8 data bits
+    mov dx, 0   		 ; Serial port 0
+    int 0x14   		 ; Configure serial port
+
+—
+
+In this segment of code we will first save the drive number which was passed by the BIOS into the dl register. The next 4 lines of code will set up the serial port. This is strictly necessary but will be very helpful for any debugging you'll want to do later. Setting up the serial port in 16-bit assembly is fairly simple due to the fact that we still have BIOS interrupts to work with. The rest of the serial port setup is pretty self-evident from the code comments.
 
 ; Get the BIOS E820 Memory Map.
 ; use the INT 0x15, eax= 0xE820 BIOS function to get a memory map.
 ; inputs: es:di -> destination buffer for 24 byte entries.
 ; outputs: bp = entry count, trashes all registers except esi.
 do_e820:
-	mov edi, 0x00006000		; location that memory map will be stored to
-	xor ebx, ebx			; ebx must be 0 to start
-	xor bp, bp			; keep an entry count in bp
-	mov edx, 0x0534D4150		; Place "SMAP" into edx
-	mov eax, 0xe820
-	mov [es:di + 20], dword 1	; force a valid ACPI 3.X entry
-	mov ecx, 24			; ask for 24 bytes
-	int 0x15
-	jc nomemmap			; carry set on first call means "unsupported function"
-	mov edx, 0x0534D4150		; Some BIOSes apparently trash this register?
-	cmp eax, edx			; on success, eax must have been reset to "SMAP"
-	jne nomemmap
-	test ebx, ebx			; ebx = 0 implies list is only 1 entry long (worthless)
-	je nomemmap
-	jmp jmpin
+    mov edi, 0x00006000   	 ; location that memory map will be stored to
+    xor ebx, ebx   		 ; ebx must be 0 to start
+    xor bp, bp   		 ; keep an entry count in bp
+    mov edx, 0x0534D4150   	 ; Place "SMAP" into edx
+    mov eax, 0xe820
+    mov [es:di + 20], dword 1    ; force a valid ACPI 3.X entry
+    mov ecx, 24   		 ; ask for 24 bytes
+    int 0x15
+    jc nomemmap   		 ; carry set on first call means "unsupported function"
+    mov edx, 0x0534D4150   	 ; Some BIOSes apparently trash this register?
+    cmp eax, edx   		 ; on success, eax must have been reset to "SMAP"
+    jne nomemmap
+    test ebx, ebx   		 ; ebx = 0 implies list is only 1 entry long (worthless)
+    je nomemmap
+    jmp jmpin
 e820lp:
-	mov eax, 0xe820			; eax, ecx get trashed on every int 0x15 call
-	mov [es:di + 20], dword 1	; force a valid ACPI 3.X entry
-	mov ecx, 24			; ask for 24 bytes again
-	int 0x15
-	jc memmapend			; carry set means "end of list already reached"
-	mov edx, 0x0534D4150		; repair potentially trashed register
+    mov eax, 0xe820   		 ; eax, ecx get trashed on every int 0x15 call
+    mov [es:di + 20], dword 1    ; force a valid ACPI 3.X entry
+    mov ecx, 24   		 ; ask for 24 bytes again
+    int 0x15
+    jc memmapend   		 ; carry set means "end of list already reached"
+    mov edx, 0x0534D4150   	 ; repair potentially trashed register
 jmpin:
-	jcxz skipent			; skip any 0 length entries
-	cmp cl, 20			; got a 24 byte ACPI 3.X response?
-	jbe notext
-	test byte [es:di + 20], 1	; if so: is the "ignore this data" bit clear?
-	je skipent
+    jcxz skipent   		 ; skip any 0 length entries
+    cmp cl, 20   		 ; got a 24 byte ACPI 3.X response?
+    jbe notext
+    test byte [es:di + 20], 1    ; if so: is the "ignore this data" bit clear?
+    je skipent
 notext:
-	mov ecx, [es:di + 8]		; get lower dword of memory region length
-	test ecx, ecx			; is the qword == 0?
-	jne goodent
-	mov ecx, [es:di + 12]		; get upper dword of memory region length
-	jecxz skipent			; if length qword is 0, skip entry
+    mov ecx, [es:di + 8]   	 ; get lower dword of memory region length
+    test ecx, ecx   		 ; is the qword == 0?
+    jne goodent
+    mov ecx, [es:di + 12]   	 ; get upper dword of memory region length
+    jecxz skipent   		 ; if length qword is 0, skip entry
 goodent:
-	inc bp				; got a good entry: ++count, move to next storage spot
-	add di, 32
+    inc bp   			 ; got a good entry: ++count, move to next storage spot
+    add di, 32
 skipent:
-	test ebx, ebx			; if ebx resets to 0, list is complete
-	jne e820lp
+    test ebx, ebx   		 ; if ebx resets to 0, list is complete
+    jne e820lp
 nomemmap:
-;	mov byte [cfg_e820], 0		; No memory map function
+;    mov byte [cfg_e820], 0   	 ; No memory map function
 memmapend:
-	xor eax, eax			; Create a blank record for termination (32 bytes)
-	mov ecx, 8
-	rep stosd
+    xor eax, eax   		 ; Create a blank record for termination (32 bytes)
+    mov ecx, 8
+    rep stosd
 
 ; Enable the A20 gate
 set_A20:
-	in al, 0x64
-	test al, 0x02
-	jnz set_A20
-	mov al, 0xD1
-	out 0x64, al
+    in al, 0x64
+    test al, 0x02
+    jnz set_A20
+    mov al, 0xD1
+    out 0x64, al
 check_A20:
-	in al, 0x64
-	test al, 0x02
-	jnz check_A20
-	mov al, 0xDF
-	out 0x60, al
+    in al, 0x64
+    test al, 0x02
+    jnz check_A20
+    mov al, 0xDF
+    out 0x60, al
 
-	mov si, msg_Load
-	call print_string_16
+    mov si, msg_Load
+    call print_string_16
 
-	mov cx, 0x4000 - 1		; Start looking from here
+    mov cx, 0x4000 - 1   	 ; Start looking from here
 
-	; Read the 2nd stage boot loader into memory.
-	mov ah, 0x42			; Extended Read
-	mov dl, [DriveNumber]		; http://www.ctyme.com/intr/rb-0708.htm
-	mov si, DAP
-	int 0x13
-	jc read_fail
+    ; Read the 2nd stage boot loader into memory.
+    mov ah, 0x42   		 ; Extended Read
+    mov dl, [DriveNumber]   	 ; http://www.ctyme.com/intr/rb-0708.htm
+    mov si, DAP
+    int 0x13
+    jc read_fail
 
-	; Verify that the 2nd stage boot loader was read.
-	mov ax, [0x8006]
-	cmp ax, 0x3436			; Compare the checksum
-	jne sig_fail
+    ; Verify that the 2nd stage boot loader was read.
+    mov ax, [0x8006]
+    cmp ax, 0x3436   		 ; Compare the checksum
+    jne sig_fail
 
-	mov si, msg_OK
-	call print_string_16
+    mov si, msg_OK
+    call print_string_16
 
-	; At this point we are done with real mode and BIOS interrupts. Jump to 32-bit mode.
-	cli				; No more interrupts
-	lgdt [cs:GDTR32]		; Load GDT register
-	mov eax, cr0
-	or al, 0x01			; Set protected mode bit
-	mov cr0, eax
-	jmp 8:0x8000			; Jump to 32-bit protected mode
+    ; At this point we are done with real mode and BIOS interrupts. Jump to 32-bit mode.
+    cli   			 ; No more interrupts
+    lgdt [cs:GDTR32]   	 ; Load GDT register
+    mov eax, cr0
+    or al, 0x01   		 ; Set protected mode bit
+    mov cr0, eax
+    jmp 8:0x8000   		 ; Jump to 32-bit protected mode
 
 read_fail:
-	mov si, msg_ReadFail
-	call print_string_16
-	jmp halt
+    mov si, msg_ReadFail
+    call print_string_16
+    jmp halt
 sig_fail:
-	mov si, msg_SigFail
-	call print_string_16
+    mov si, msg_SigFail
+    call print_string_16
 halt:
-	hlt
-	jmp halt
+    hlt
+    jmp halt
 
 
 ; 16-bit function to output a string to the serial port
-; IN:	SI - Address of start of string
-print_string_16:			; Output string in SI to screen
-	pusha
-	mov dx, 0			; Port 0
+; IN:    SI - Address of start of string
+print_string_16:   		 ; Output string in SI to screen
+    pusha
+    mov dx, 0   		 ; Port 0
 .repeat:
-	mov ah, 0x01			; Serial - Write character to port
-	lodsb				; Get char from string
-	cmp al, 0
-	je .done			; If char is zero, end of string
-	int 0x14			; Output the character
-	jmp short .repeat
+    mov ah, 0x01   		 ; Serial - Write character to port
+    lodsb   			 ; Get char from string
+    cmp al, 0
+    je .done   		 ; If char is zero, end of string
+    int 0x14   		 ; Output the character
+    jmp short .repeat
 .done:
-	popa
-	ret
+    popa
+    ret
 ;------------------------------------------------------------------------------
 
 align 16
-GDTR32:					; Global Descriptors Table Register
-dw gdt32_end - gdt32 - 1		; limit of GDT (size minus one)
-dq gdt32				; linear address of GDT
+GDTR32:   				 ; Global Descriptors Table Register
+dw gdt32_end - gdt32 - 1   	 ; limit of GDT (size minus one)
+dq gdt32   			 ; linear address of GDT
 
 align 16
 gdt32:
-dw 0x0000, 0x0000, 0x0000, 0x0000	; Null descriptor
-dw 0xFFFF, 0x0000, 0x9A00, 0x00CF	; 32-bit code descriptor
-dw 0xFFFF, 0x0000, 0x9200, 0x00CF	; 32-bit data descriptor
+dw 0x0000, 0x0000, 0x0000, 0x0000    ; Null descriptor
+dw 0xFFFF, 0x0000, 0x9A00, 0x00CF    ; 32-bit code descriptor
+dw 0xFFFF, 0x0000, 0x9200, 0x00CF    ; 32-bit data descriptor
 gdt32_end:
 
 msg_Load db 10, "MBR ", 0
@@ -265,12 +274,12 @@ times 476-$+$$ db 0
 align 4
 
 DAP:
-	db 0x10
-	db 0x00
-	dw SECTORS
-	dw ADDRESS
-	dw SEGMENT
-	dq STARTSECTOR
+    db 0x10
+    db 0x00
+    dw SECTORS
+    dw ADDRESS
+    dw SEGMENT
+    dq STARTSECTOR
 
 times 510-$+$$ db 0
 
